@@ -1,0 +1,368 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"description": "",
+	"type": "object",
+	"properties": {
+		"log": {
+			"type": "object",
+			"properties": {
+				"version": {
+					"type": "string",
+					"minLength": 1
+				},
+				"creator": {
+					"type": "object",
+					"properties": {
+						"name": {
+							"type": "string",
+							"minLength": 1
+						},
+						"version": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"required": [
+						"name",
+						"version"
+					]
+				},
+				"pages": {
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"required": [
+							"startedDateTime",
+							"id",
+							"title"
+						],
+						"properties": {
+							"startedDateTime": {
+								"type": "string",
+								"minLength": 1
+							},
+							"id": {
+								"type": "string",
+								"minLength": 1
+							},
+							"title": {
+								"type": "string",
+								"minLength": 1
+							},
+							"pageTimings": {
+								"type": "object",
+								"properties": {
+									"onContentLoad": {},
+									"onLoad": {}
+								},
+								"required": []
+							}
+						}
+					}
+				},
+				"entries": {
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"required": [
+							"_connectionId",
+							"_priority",
+							"_resourceType",
+							"connection",
+							"pageref",
+							"serverIPAddress",
+							"startedDateTime",
+							"time"
+						],
+						"properties": {
+							"_connectionId": {
+								"type": "string",
+								"minLength": 1
+							},
+							"_initiator": {
+								"type": "object",
+								"properties": {
+									"type": {
+										"type": "string",
+										"minLength": 1
+									}
+								},
+								"required": [
+									"type"
+								]
+							},
+							"_priority": {
+								"type": "string",
+								"minLength": 1
+							},
+							"_resourceType": {
+								"type": "string",
+								"minLength": 1
+							},
+							"cache": {
+								"type": "object",
+								"properties": {},
+								"required": []
+							},
+							"connection": {
+								"type": "string",
+								"minLength": 1
+							},
+							"pageref": {
+								"type": "string",
+								"minLength": 1
+							},
+							"request": {
+								"type": "object",
+								"properties": {
+									"method": {
+										"type": "string",
+										"minLength": 1
+									},
+									"url": {
+										"type": "string",
+										"minLength": 1
+									},
+									"httpVersion": {
+										"type": "string",
+										"minLength": 1
+									},
+									"headers": {
+										"type": "array",
+										"uniqueItems": true,
+										"minItems": 1,
+										"items": {
+											"required": [
+												"name",
+												"value"
+											],
+											"properties": {
+												"name": {
+													"type": "string",
+													"minLength": 1
+												},
+												"value": {
+													"type": "string",
+													"minLength": 1
+												}
+											}
+										}
+									},
+									"queryString": {
+										"type": "array",
+										"uniqueItems": true,
+										"minItems": 1,
+										"items": {
+											"required": [
+												"name",
+												"value"
+											],
+											"properties": {
+												"name": {
+													"type": "string",
+													"minLength": 1
+												},
+												"value": {
+													"type": "string",
+													"minLength": 1
+												}
+											}
+										}
+									},
+									"cookies": {
+										"type": "array",
+										"items": {
+											"required": [],
+											"properties": {}
+										}
+									},
+									"headersSize": {
+										"type": "number"
+									},
+									"bodySize": {
+										"type": "number"
+									}
+								},
+								"required": [
+									"method",
+									"url",
+									"httpVersion",
+									"headers",
+									"queryString",
+									"cookies",
+									"headersSize",
+									"bodySize"
+								]
+							},
+							"response": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "number"
+									},
+									"statusText": {
+										"type": "string"
+									},
+									"httpVersion": {
+										"type": "string",
+										"minLength": 1
+									},
+									"headers": {
+										"type": "array",
+										"uniqueItems": true,
+										"minItems": 1,
+										"items": {
+											"required": [
+												"name",
+												"value"
+											],
+											"properties": {
+												"name": {
+													"type": "string",
+													"minLength": 1
+												},
+												"value": {
+													"type": "string",
+													"minLength": 1
+												}
+											}
+										}
+									},
+									"cookies": {
+										"type": "array",
+										"items": {
+											"required": [],
+											"properties": {}
+										}
+									},
+									"content": {
+										"type": "object",
+										"properties": {
+											"size": {
+												"type": "number"
+											},
+											"mimeType": {
+												"type": "string",
+												"minLength": 1
+											}
+										},
+										"required": [
+											"size",
+											"mimeType"
+										]
+									},
+									"redirectURL": {
+										"type": "string"
+									},
+									"headersSize": {
+										"type": "number"
+									},
+									"bodySize": {
+										"type": "number"
+									},
+									"_transferSize": {
+										"type": "number"
+									},
+									"_error": {},
+									"_fetchedViaServiceWorker": {
+										"type": "boolean"
+									}
+								},
+								"required": [
+									"status",
+									"statusText",
+									"httpVersion",
+									"headers",
+									"cookies",
+									"content",
+									"redirectURL",
+									"headersSize",
+									"bodySize",
+									"_transferSize",
+									"_fetchedViaServiceWorker"
+								]
+							},
+							"serverIPAddress": {
+								"type": "string",
+								"minLength": 1
+							},
+							"startedDateTime": {
+								"type": "string",
+								"minLength": 1
+							},
+							"time": {
+								"type": "number"
+							},
+							"timings": {
+								"type": "object",
+								"properties": {
+									"blocked": {
+										"type": "number"
+									},
+									"dns": {
+										"type": "number"
+									},
+									"ssl": {
+										"type": "number"
+									},
+									"connect": {
+										"type": "number"
+									},
+									"send": {
+										"type": "number"
+									},
+									"wait": {
+										"type": "number"
+									},
+									"receive": {
+										"type": "number"
+									},
+									"_blocked_queueing": {
+										"type": "number"
+									},
+									"_workerStart": {
+										"type": "number"
+									},
+									"_workerReady": {
+										"type": "number"
+									},
+									"_workerFetchStart": {
+										"type": "number"
+									},
+									"_workerRespondWithSettled": {
+										"type": "number"
+									}
+								},
+								"required": [
+									"blocked",
+									"dns",
+									"ssl",
+									"connect",
+									"send",
+									"wait",
+									"receive",
+									"_blocked_queueing",
+									"_workerStart",
+									"_workerReady",
+									"_workerFetchStart",
+									"_workerRespondWithSettled"
+								]
+							}
+						}
+					}
+				}
+			},
+			"required": [
+				"version",
+				"creator",
+				"pages",
+				"entries"
+			]
+		}
+	},
+	"required": [
+		"log"
+	]
+}
