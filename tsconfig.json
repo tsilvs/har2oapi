@@ -1,5 +1,7 @@
 {
 	"compilerOptions": {
+		"target": "es2017",
+		"module": "node18",
 		"moduleResolution": "node"
 	}
 }

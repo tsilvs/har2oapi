@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import * as cla from 'command-line-args'
-import * as clu from 'command-line-usage'
+import cla from 'command-line-args'
+import clu from 'command-line-usage'
 import type { Har } from "har-format"
 import { generateSpec } from "har-to-openapi"
 import { HarToOpenAPIConfig } from "har-to-openapi/dist/types"
@@ -104,20 +104,23 @@ const cliParams: cla.CommandLineOptions = cla(
 // + Deal with loaded file data storage
 // 	+ Probably no reason to store all param file data, but might be more scalable for future features
 
-// const loadJsonFile = (path: fs.PathOrFileDescriptor) => (resolve, reject): object => {
-// 	let jsonParsed: object = {}
-// 	fs.readFile(path, 'utf8', (err, data) => {
-// 		if (err) {
-// 			console.error('Error reading file:', err)
-// 		}
-// 		jsonParsed = JSON.parse(stripJsonComments(data))
-// 	})
-// 	return jsonParsed
-// }
-// const readParamFiles = (paths: SysPaths) => Object.values(paths).reduce( (acc, path) => ({...acc, ...loadJsonFile(path)}), {})
-// const fileParams = readParamFiles(paths)
+const loadJsonFile = (path: fs.PathOrFileDescriptor): Promise<object> =>
+	new Promise((resolve, reject) => {
+		fs.readFile(path, 'utf8', (err, data) => {
+			if (err) return reject(err)
+			try {
+				const jsonParsed = JSON.parse(stripJsonComments(data))
+				resolve(jsonParsed)
+			} catch (e) {
+				reject(e)
+			}
+		})
+	})
 
-// claptions
+const readParamFiles = (paths: SysPaths): Promise<object[]> =>
+	Promise.all(Object.values(paths).map(path => loadJsonFile(path)))
+
+const fileParams = await readParamFiles(paths)
 
 // Conf loading process:
 // CLI params are loaded if present
@@ -142,7 +145,7 @@ const composeParams = (defaults: HarToOpenAPIConfig) => {
 	let params = defaults
 	return (fileParams: object[]) => {
 		const merged = fileParams.reduce((acc, obj) => ({ ...acc, ...obj }), params)
-		return (cliParams: cla.CommandLineOptions) => ({...params, ...cliParams})
+		return (cliParams: cla.CommandLineOptions) => ({ ...params, ...cliParams })
 	}
 }
 
