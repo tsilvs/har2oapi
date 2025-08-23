@@ -1,0 +1,14 @@
+{
+	"cSpell.ignoreWords": [
+		"appinfo",
+		"buildroot",
+		"configfile",
+		"homeroot",
+		"jsonparse",
+		"oapi",
+		"OAPICLI",
+		"systemroot"
+	],
+	"cSpell.words": [
+	]
+}

@@ -14,6 +14,9 @@ importers:
       '@types/command-line-usage':
         specifier: ^5.0.4
         version: 5.0.4
+      '@types/strip-json-comments':
+        specifier: ^3.0.0
+        version: 3.0.0
       command-line-args:
         specifier: ^6.0.1
         version: 6.0.1
@@ -142,6 +145,10 @@ packages:
 
   '@types/node@24.3.0':
     resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
+
+  '@types/strip-json-comments@3.0.0':
+    resolution: {integrity: sha512-+vSlZeCCGm/1Q3WwBJDUSGHvADTQjRl4Fve0AG9H+A4+xgJ7yAkWKoc4g7I9UoVqtwCzjv2g/GZn4xipokMYyQ==}
+    deprecated: This is a stub types definition. strip-json-comments provides its own type definitions, so you do not need this installed.
 
   '@typescript-eslint/eslint-plugin@8.40.0':
     resolution: {integrity: sha512-w/EboPlBwnmOBtRbiOvzjD+wdiZdgFeo17lkltrtn7X37vagKKWJABvyfsJXTlHe6XBzugmYgd4A4nW+k8Mixw==}
@@ -917,6 +924,10 @@ snapshots:
   '@types/node@24.3.0':
     dependencies:
       undici-types: 7.10.0
+
+  '@types/strip-json-comments@3.0.0':
+    dependencies:
+      strip-json-comments: 5.0.3
 
   '@typescript-eslint/eslint-plugin@8.40.0(@typescript-eslint/parser@8.40.0(eslint@9.33.0)(typescript@5.9.2))(eslint@9.33.0)(typescript@5.9.2)':
     dependencies:
