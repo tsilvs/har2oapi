@@ -13,15 +13,38 @@ import stripJsonComments from 'strip-json-comments'
 //type HarToOpenAPIConfig = import('har-to-openapi/dist/types').HarToOpenAPIConfig
 //import type { HarToOpenAPIConfig } from 'har-to-openapi/dist/types'
 type HarToOpenAPIConfig_tmpCompatSubset = {
-	forceAllRequestsInSameSpec: Boolean,
-	addServersToPaths: Boolean,
-	guessAuthenticationHeaders: Boolean,
-	relaxedMethods: Boolean,
-	relaxedContentTypeJsonParse: Boolean,
-	filterStandardHeaders: Boolean,
-	logErrors: Boolean,
-	attemptToParameterizeUrl: Boolean,
-	dropPathsWithoutSuccessfulResponse: Boolean
+	forceAllRequestsInSameSpec?: Boolean,
+	addServersToPaths?: Boolean,
+	guessAuthenticationHeaders?: Boolean,
+	relaxedMethods?: Boolean,
+	relaxedContentTypeJsonParse?: Boolean,
+	filterStandardHeaders?: Boolean,
+	logErrors?: Boolean,
+	attemptToParameterizeUrl?: Boolean,
+	dropPathsWithoutSuccessfulResponse?: Boolean
+}
+
+type appConfig = {
+	verbose?: Boolean,
+	file?: fs.PathLike,
+	out?: fs.PathLike
+}
+
+type HAR2OAPICLIParams = {
+	harConfig?: HarToOpenAPIConfig_tmpCompatSubset,
+	config?: appConfig
+}
+
+namespace HAR2OAPICLIParams {
+	export const reducer = (
+		state: HAR2OAPICLIParams,
+		update: Partial<HAR2OAPICLIParams>
+	): HAR2OAPICLIParams => {
+		return {
+			harConfig: { ...state.harConfig, ...update.harConfig },
+			config: { ...state.config, ...update.config }
+		}
+	}
 }
 
 // Utils
@@ -90,11 +113,16 @@ const pns: ParamName[] = [
 ]
 
 const cliOpts: clu.OptionDefinition[] = [
-	// { group: `App`, type: String, name: 'src', multiple: true, defaultOption: true },
-	// { group: `App`, type: Number, alias: 't', name: 'timeout' },
-	{ group: `App`, type: Boolean, defaultValue: false, alias: 'v', name: 'verbose' },
+	//{ group: `App`, type: String, name: 'src', multiple: true, defaultOption: true },
+	//{ group: `App`, type: Number, alias: 't', name: 'timeout' },
+	{ group: `App`, type: Boolean, defaultValue: false, alias: 'v', name: 'verbose', description: `Print diagnostic messages` },
+	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'd', name: 'debug', description: `Print diagnostic messages.` },
 	{ group: `App`, type: Boolean, defaultValue: false, alias: 'h', name: `help`, description: `Display help message.` },
 	{ group: `App`, type: Boolean, defaultValue: false, alias: 'V', name: `version`, description: `Display version.` },
+	//{ group: `App`, type: Boolean, defaultValue: false, alias: `C`, name: `configExport`, description: `Print effective config to stderr.` },
+	{ group: `App`, type: String, defaultValue: `./openapi.yaml`, alias: `o`, name: `out`, description: 'Output file path.' },
+	//{ group: `App`, type: Boolean, defaultValue: false, alias: 's', name: `safeOut`, description: `Safe output - doesn't write to a non-empty file.` },
+	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'a', name: `append`, description: `Append to an output file. Conflicts with --safeOut.` },
 	{ group: `HAR`, type: Boolean, defaultValue: false, alias: `S`, name: `${pnf(pns)(`forceAllRequestsInSameSpec`).s}`, description: `Treat every url as having the same domain.` },
 	{ group: `HAR`, type: Boolean, defaultValue: false, alias: `P`, name: `${pnf(pns)(`addServersToPaths`).s}`, description: `Add a servers entry to every path object.` },
 	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `A`, name: `${pnf(pns)(`guessAuthenticationHeaders`).s}`, description: `Try and guess common auth headers.` },
@@ -104,7 +132,7 @@ const cliOpts: clu.OptionDefinition[] = [
 	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `L`, name: `${pnf(pns)(`logErrors`).s}`, description: `Log errors to console.` },
 	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `q`, name: `${pnf(pns)(`attemptToParameterizeUrl`).s}`, description: `Try and parameterize an URL.` },
 	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `N`, name: `${pnf(pns)(`dropPathsWithoutSuccessfulResponse`).s}`, description: `Don't include paths without a response or with a non-2xx response.` },
-	{ group: `HAR`, type: String, alias: `f`, name: `file`, description: 'Input file', defaultOption: true }
+	{ group: `App`, type: String, alias: `f`, name: `file`, description: 'Input file', defaultOption: true }
 ]
 
 const options: cla.CommandLineOptions = cla(
@@ -118,9 +146,10 @@ const options: cla.CommandLineOptions = cla(
 	}
 )
 
+/**
+ * If verbose - will print verbose logs. // TODO: Start using it.
+ */
 const vbLogW = verboseLog(options.verbose)
-
-// Print Help, exit
 
 const usage: string = clu([
 	{
@@ -137,123 +166,138 @@ const printHelp = (usage: string) /* => (err: Error) */ => {
 	process.exit(0)
 }
 
-if (options.help) printHelp(usage)
+/**
+ * If (help) - Print Help, exit
+ */
 
-// Take input file
+options.help && printHelp(usage)
 
-// If no file name or no STDIN pipe - print error, exit
+/**
+ * Take input file.
+ * If (no file name) and (no STDIN pipe) - print error, exit
+ */
 
 !options.file && process.stdin.isTTY && thr()()(erh('Provide input via --file or stdin pipe.')())
 
-// if (no file passed) and (pipe is not a file)
-// can be
-// t & t = t
-// t & f = f
-// f & t = f
-// f & f = f
-// Will execute only when (no file passed) and (pipe is not a file)
-// If (file passed) but (pipe is not a file) then we go further
-// If (file not passed) but (pipe is a file) then we go further
-// If (file passed) and (pipe is a file) then we go further
+/**
+ * File conditions:
+ * 
+ * | Condition | Necessary | Sufficient |
+ * |-----------|-----------|------------|
+ * | Exists    | Yes       | No         |
+ * | Filled    | Yes       | Yes        |
+ * 
+ * Therefore, in the same function we check for both, but throw a different error on different types of failures
+ * If no file or file invalid - print error, exit
+ * //TODO: Maybe rewrite with workers for parallelism?
+ */
 
-/*
-
-File conditions:
-
-| Condition | Necessary | Sufficient |
-|-----------|-----------|------------|
-| Exists    | Yes       | No         |
-| Filled    | Yes       | Yes        |
-
-Therefore, in the same function we check for both, but throw a different error on different types of failures
-
-*/
-
-// If no file or file invalid - print error, exit
-
-const loadFile = /* async */ (path: fs.PathLike) => {
+const loadFile = /* async */ (path: fs.PathLike) => (throwErrors: boolean = false) => {
 	let stats: fs.Stats
 	try {
 		stats = fs.statSync(path)
 		if (stats.size > 0) {
 			return fs.readFileSync(path, `utf8`)
 		} else {
-			throw new Error(`File is empty.`)
+			if (throwErrors) throw new Error(`File is empty.`)
 		}
 	} catch (err) {
 		erh()()(err)
 	}
 }
 
-// 2. Validate the file content
-
-/*
-
-When we want to validate:
-
-1. When we already have confirmed that a file exists
-2. When we are loading the file - always
-
-File loader function can be a validator function too?
-
-It can:
-
-1. Load
-+ Store loaded data (curried clojure)? - no reason to do it here for now.
-2. Validate by parsing - no other way to do it with JSON because it's a string without extra binary headers, unless relying on file name extension
-+ Validation already requires parsing, so it can return parsed data
-+ Can store parsed data (curried clojure)? - no reason to do it here for now.
-
-*/
+/** 
+ * Validate JSON file content.
+ * 
+ * When we want to validate:
+ * 
+ * 1. When we already have confirmed that a file exists
+ * 2. When we are loading the file - always
+ * 
+ * File loader function can be a validator function too?
+ * 
+ * It can:
+ * 
+ * 1. Load
+ * 	+ Store loaded data (curried clojure)? - no reason to do it here for now.
+ * 2. Validate by parsing - no other way to do it with JSON because it's a string without extra binary headers, unless relying on file name extension
+ * 	+ Validation already requires parsing, so it can return parsed data
+ * 	+ Can store parsed data (curried clojure)? - no reason to do it here for now.
+ */
 
 const jsonLoad = (data: string): object => {
 	let datanc: string = ''
 	try {
-		datanc = stripJsonComments(data)
+		datanc = stripJsonComments(data) // TODO: Decide if I need it all the time or not. It may come out as an overhead and slow down the runtime.
 		return JSON.parse(datanc)
 	} catch (err) {
 		erh()()(err)
 	}
 }
 
-// TODO:
-// + Deal with file loading
-// + Deal with loaded file data storage
-// 	+ Probably no reason to store all param file data, but might be more scalable for future features
+/* Default "hardcoded" params */
 
-// const loadJsonFile = (path: fs.PathOrFileDescriptor): Promise<object> =>
-// 	new Promise((resolve, reject) => {
-// 		fs.readFile(path, 'utf8', (err, data) => {
-// 			if (err) return reject(err)
-// 			try {
-// 				const jsonParsed = jsonLoad(data)
-// 				resolve(jsonParsed)
-// 			} catch (e) {
-// 				reject(e)
-// 			}
-// 		})
-// 	})
-
-// const readParamFiles = (paths: SysPaths): Promise<object[]> =>
-// 	Promise.all(Object.values(paths).map(path => loadJsonFile(path)))
-
-// const fileParams = await readParamFiles(paths)
-
-const paramStrings: string[] = Object.values(paths).map(path => loadFile(path))
-
-type HAR2OAPICLIParams = {
-	config: HarToOpenAPIConfig_tmpCompatSubset
+const defaults: HAR2OAPICLIParams = {
+	harConfig: {
+		forceAllRequestsInSameSpec: false,
+		addServersToPaths: false,
+		guessAuthenticationHeaders: true,
+		relaxedMethods: false,
+		relaxedContentTypeJsonParse: true,
+		filterStandardHeaders: true,
+		logErrors: true,
+		attemptToParameterizeUrl: true,
+		dropPathsWithoutSuccessfulResponse: true
+	},
+	config: {
+		verbose: false,
+		file: "./har.json",
+		out: "./openapi.yaml"
+	}
 }
 
-const paramObj = paramStrings
-	.map(jsonLoad)
-	.reduce((acc, obj) => ({ ...acc, ...obj }), {} as HAR2OAPICLIParams)
+/**
+ * Params are loaded if present.
+ * 
+ * Conf load order:
+ * 
+ * 1. Default "hardcoded" params
+ * 2. conf file @ app distro
+ * 3. conf file @ /etc/ dir
+ * 4. conf file @ Home dir
+ * 5. conf file @ Work dir
+ * 6. CLI params
+*/
 
-// Runtime
+/**
+ * Loads configs from all possible config file locations, layering one over the other, all over hardcoded defaults.
+ * Probably no reason to store all param file data, so not doing it now.
+ * But it might be more scalable for future features than current strategy.
+ */
+//TODO: Process CLI `options` here or later? Does `options` have nested objects by groups or everything in a shallow 1L object?
+//const paramObj: HAR2OAPICLIParams = Object.values(paths).map(path => jsonLoad(loadFile(path)())).reduce(HAR2OAPICLIParams.reducer, defaults)
 
-// Options to read HAR file:
-// 1. If there's an STDIN pipe - read it
-// 2. If there's an input file name - read from it
+const paramObj: HAR2OAPICLIParams = Object.values(paths).map(path => jsonLoad(loadFile(path)())).reduce(HAR2OAPICLIParams.reducer, defaults)
+
+//options
+
+/** 
+ * Runtime
+ * 
+ * Options to read HAR file:
+ * 
+ * 1. If there's an STDIN pipe - read it
+ * 2. If there's an input file name - read from it
+ * 
+ * // TODO:
+ * 
+ * + Input
+ * 	+ STDIN
+ * 	+ File path -> Load
+ * + Output
+ * 	+ STDOUT
+ * 	+ File path -> Write
+ */
 
 // let input: string = ``
 // process.stdin.on('data', chunk => input += chunk)
@@ -261,55 +305,6 @@ const paramObj = paramStrings
 // 	// process input here
 // })
 
-// TODO:
-// + Detect STDIN
-// + Detect file path
-// 	+ Load file
-// + Output through STDOUT
-
-// // 1. Default "hardcoded" params
-
-// const defaults: HarToOpenAPIConfig_tmpCompatSubset = {
-// 	forceAllRequestsInSameSpec: false,
-// 	addServersToPaths: false,
-// 	guessAuthenticationHeaders: true,
-// 	relaxedMethods: false,
-// 	relaxedContentTypeJsonParse: true,
-// 	filterStandardHeaders: true,
-// 	logErrors: true,
-// 	attemptToParameterizeUrl: true,
-// 	dropPathsWithoutSuccessfulResponse: true
-// }
-
-// // 6. CLI params
-
-// const cliParams: cla.CommandLineOptions = cla(
-// 	cliOpts,
-// 	{
-// 		partial: true,
-// 		//camelCase: true,
-// 		caseInsensitive: false
-// 	}
-// )
-
-// // Conf loading process:
-// // CLI params are loaded if present
-
-// // Conf load order:
-// // 1. Default "hardcoded" params
-// // 2. conf file @ app distro
-// // 3. conf file @ /etc/ dir
-// // 4. conf file @ Home dir
-// // 5. conf file @ Work dir
-// // 6. CLI params
-
-// // Reading params
-// // 1. Load default params
-// // 2. If an app dir config file is present - overwrite loaded params with it's params
-// // 3. If an /etc/ dir config file is present - overwrite loaded params with it's params
-// // 4. If a Home dir config file is present - overwrite loaded params with it's params
-// // 5. If a current work dir config file is present - overwrite loaded params with it's params
-// // 6. If cmd params are present - overwrite loaded params with it's params
 
 // const composeParams = (defaults: HarToOpenAPIConfig_tmpCompatSubset) => {
 // 	let params = defaults
