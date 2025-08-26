@@ -19,3 +19,6 @@ CLI tool to generate OpenAPI specs from HAR Logs using [`har-to-openapi`](https:
 ### New features
 
 + [ ] Multiple OpenAPI Versions support?
++ [ ] Processing time estimates?
++ [ ] Multithreaded big HAR file processing?
++ [ ] Multithreaded multi-file processing?
