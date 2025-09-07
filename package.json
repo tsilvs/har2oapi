@@ -14,11 +14,11 @@
 	"dependencies": {
 		"@types/command-line-args": "^5.2.3",
 		"@types/command-line-usage": "^5.0.4",
-		"@types/strip-json-comments": "^3.0.0",
 		"command-line-args": "^6.0.1",
 		"command-line-usage": "^7.0.3",
 		"har-to-openapi": "^2.1.1",
-		"strip-json-comments": "^5.0.3"
+		"strip-json-comments": "^5.0.3",
+		"yaml": "^2.8.1"
 	},
 	"devDependencies": {
 		"@types/har-format": "^1.2.16",

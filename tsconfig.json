@@ -1,7 +1,14 @@
 {
 	"compilerOptions": {
-		"target": "es2017",
-		"module": "node18",
-		"moduleResolution": "node16"
-	}
+		//"target": "esnext",
+		"target": "esnext",
+		//"module": "nodenext",
+		"module": "preserve",
+		//"moduleResolution": "nodenext",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"esModuleInterop": true
+	},
+	"include": ["package.json", "src/**/*.ts"],
+	"exclude": ["node_modules"]
 }

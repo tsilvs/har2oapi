@@ -1,15 +1,17 @@
 {
 	"cSpell.ignoreWords": [
+		"OAPICLI",
+		"ainf",
 		"appinfo",
 		"buildroot",
 		"configfile",
+		"datanc",
+		"erhmc",
 		"homeroot",
 		"jsonparse",
+		"nodenext",
 		"oapi",
-		"OAPICLI",
-		"systemroot",
-		"datanc",
-		"erhmc"
+		"systemroot"
 	],
 	"cSpell.words": [
 		"Bollean",
