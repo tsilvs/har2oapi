@@ -13,24 +13,22 @@ import * as YAML from 'yaml'
 
 type PackageManifest = typeof pkgManif
 
-//import('strip-json-comments')
-
 /** 
- * Should've been imported, but is not exported from `har-to-openapi`.
- * 
- * Failing attempts to import:
- * + `type HarToOpenAPIConfig = import('har-to-openapi/dist/types').HarToOpenAPIConfig`
- * + `import type { HarToOpenAPIConfig } from 'har-to-openapi/dist/types'`
+ * Should've been imported, but is not exported from `har-to-openapi` yet.
  */
 type HarToOpenAPIConfig = Parameters<typeof generateSpec>[1]
+/** 
+ * Should've been imported, but is not exported from `har-to-openapi` yet.
+ */
+type HarToOpenAPISpec = Awaited<ReturnType<typeof generateSpec>>
 
 /**
  * App CLI options
  */
 type appConfig = {
 	verbose?: boolean,
-	file?: fs.PathLike,
-	out?: fs.PathLike
+	input?: fs.PathLike,
+	output?: fs.PathLike
 }
 
 type HAR2OAPICLIParams = HarToOpenAPIConfig & appConfig
@@ -59,12 +57,6 @@ namespace HAR2OAPICLIParams {
 	}
 }
 
-interface HarToOpenAPISpec_tmpComp {
-	spec: OpenAPIObject
-	yamlSpec: string
-	domain: string | undefined
-}
-
 // Utils
 
 /**
@@ -79,25 +71,38 @@ const erh = (msg?: string) => (code: number = 1) => (exitOnError: boolean = true
  * Call this to throw and catch an error when 3rd party doesn't.
  * @param msg 
  * @param erhmc Error handling function
- * @returns 
+ * @returns void
 */
 const thr = (msg?: string) => (erhmc: Function): void => { try { throw new Error(msg) } catch (err) { erhmc(err) } }
 /**
- * @type ParamName
+ * @type ParamDef
  * 
 */
-type ParamName = {
+type ParamDef = {
 	a?: string,
 	s?: string,
-	l?: string
+	l?: string,
+	d?: string
 }
-/**
- * 
- * @param pns 
- * @param n 
- * @returns 
-*/
-const pnf = (pns: ParamName[]) => (n: string): ParamName => pns.find(pn => pn.l == n)
+
+namespace ParamDef {
+	/**
+	 * 
+	 * @param pdefs 
+	 * @param n 
+	 * @returns 
+	*/
+	export const find = (pdefs: ParamDef[]) => (n: string): ParamDef => pdefs.find(pn => pn.l == n)
+
+	export const mapper = (defaults: HAR2OAPICLIParams) => (group: string) => (type: any) => (pdef: ParamDef): clu.OptionDefinition => ({
+		group: `${group}`,
+		type: type,
+		defaultValue: defaults[`${pdef.l}`],
+		alias: `${pdef.a}`,
+		name: `${pdef.s}`,
+		description: `${pdef.d}`
+	})
+}
 
 const printHelp = (usage: string) /* => (err: Error) */ => {
 	process.stdout.write(`${usage}\n`)
@@ -234,8 +239,9 @@ const paths: SysPaths = {
 }
 
 /**
+ * @constant defaults
  * Default "hardcoded" params
- */
+*/
 const defaults: HAR2OAPICLIParams = {
 	forceAllRequestsInSameSpec: false,
 	addServersToPaths: false,
@@ -247,18 +253,9 @@ const defaults: HAR2OAPICLIParams = {
 	attemptToParameterizeUrl: true,
 	dropPathsWithoutSuccessfulResponse: true,
 	verbose: false,
-	file: path.normalize(`./har.json`),
-	out: path.normalize(`./openapi.yaml`)
+	input: path.normalize(`./har2oapi.json`),
+	output: path.normalize(`./openapi.yaml`)
 }
-
-/*
-interface Config {
-	apiKey: string
-	// other properties
-}
-
-const config = require('./config.json') as Config
-*/
 
 // CLI
 
@@ -266,43 +263,30 @@ const config = require('./config.json') as Config
  * @constant pns
  * Param names
 */
-const pns: ParamName[] = [
-	{ a: `S`, s: `inSameSpec`, l: `forceAllRequestsInSameSpec` },
-	{ a: `P`, s: `srvToPaths`, l: `addServersToPaths` },
-	{ a: `A`, s: `guessAuth`, l: `guessAuthenticationHeaders` },
-	{ a: `m`, s: `relaxMtd`, l: `relaxedMethods` },
-	{ a: `p`, s: `relaxParse`, l: `relaxedContentTypeJsonParse` },
-	{ a: `H`, s: `filterStdHeads`, l: `filterStandardHeaders` },
-	{ a: `L`, s: `logErrors`, l: `logErrors` },
-	{ a: `q`, s: `tryParamUrl`, l: `attemptToParameterizeUrl` },
-	{ a: `N`, s: `drop404`, l: `dropPathsWithoutSuccessfulResponse` },
+const PARAM_DEFS: ParamDef[] = [
+	{ a: `S`, s: `inSameSpec`, l: `forceAllRequestsInSameSpec`, d: `Treat every url as having the same domain.` },
+	{ a: `P`, s: `srvToPaths`, l: `addServersToPaths`, d: `Add a servers entry to every path object.` },
+	{ a: `A`, s: `guessAuth`, l: `guessAuthenticationHeaders`, d: `Try and guess common auth headers.` },
+	{ a: `m`, s: `relaxMtd`, l: `relaxedMethods`, d: `Allow non-standard methods.` },
+	{ a: `p`, s: `relaxParse`, l: `relaxedContentTypeJsonParse`, d: `Try and parse non application/json responses as json.` },
+	{ a: `H`, s: `filterStdHeads`, l: `filterStandardHeaders`, d: `Filter out all standard headers from the parameter list in openapi.` },
+	{ a: `L`, s: `logErrors`, l: `logErrors`, d: `Log errors to console.` },
+	{ a: `q`, s: `tryParamUrl`, l: `attemptToParameterizeUrl`, d: `Try and parameterize an URL.` },
+	{ a: `N`, s: `drop404`, l: `dropPathsWithoutSuccessfulResponse`, d: `Don't include paths without a response or with a non-2xx response.` },
 ]
 
-const pnsf = pnf(pns)
-
 const cliOpts: clu.OptionDefinition[] = [
-	//{ group: `App`, type: String, name: 'src', multiple: true, defaultOption: true },
-	//{ group: `App`, type: Number, alias: 't', name: 'timeout' },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'v', name: 'verbose', description: `Report on most performed operations` },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'd', name: 'debug', description: `Print diagnostic messages.` },
 	{ group: `App`, type: Boolean, defaultValue: false, alias: 'h', name: `help`, description: `Display help message.` },
 	{ group: `App`, type: Boolean, defaultValue: false, alias: 'V', name: `version`, description: `Display version.` },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: `C`, name: `configExport`, description: `Print effective config to stderr.` },
-	{ group: `App`, type: String, defaultValue: `./openapi.yaml`, alias: `o`, name: `out`, description: 'Output file path.' },
-	//{ group: `App`, type: String, defaultValue: `yaml`, alias: `F`, name: `format`, description: 'Output file format.' },
+	{ group: `App`, type: String, defaultValue: `${defaults.output}`, alias: `o`, name: `output`, description: 'Output file path.' },
+	{ group: `App`, type: String, defaultValue: `yaml`, alias: `F`, name: `format`, description: 'Output file format.' },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 's', name: `safeOut`, description: `Safe output - doesn't write to a non-empty file.` },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'a', name: `append`, description: `Append to an output file. Conflicts with --safeOut.` },
-	//TODO: Replace with `...f(pns, defaults, ): clu.OptionDefinition[]`
-	{ group: `HAR`, type: Boolean, defaultValue: false, alias: `S`, name: `${pnsf(`forceAllRequestsInSameSpec`).s}`, description: `Treat every url as having the same domain.` },
-	{ group: `HAR`, type: Boolean, defaultValue: false, alias: `P`, name: `${pnsf(`addServersToPaths`).s}`, description: `Add a servers entry to every path object.` },
-	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `A`, name: `${pnsf(`guessAuthenticationHeaders`).s}`, description: `Try and guess common auth headers.` },
-	{ group: `HAR`, type: Boolean, defaultValue: false, alias: `m`, name: `${pnsf(`relaxedMethods`).s}`, description: `Allow non-standard methods.` },
-	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `p`, name: `${pnsf(`relaxedContentTypeJsonParse`).s}`, description: `Try and parse non application/json responses as json.` },
-	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `H`, name: `${pnsf(`filterStandardHeaders`).s}`, description: `Filter out all standard headers from the parameter list in openapi.` },
-	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `L`, name: `${pnsf(`logErrors`).s}`, description: `Log errors to console.` },
-	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `q`, name: `${pnsf(`attemptToParameterizeUrl`).s}`, description: `Try and parameterize an URL.` },
-	{ group: `HAR`, type: Boolean, defaultValue: true, alias: `N`, name: `${pnsf(`dropPathsWithoutSuccessfulResponse`).s}`, description: `Don't include paths without a response or with a non-2xx response.` },
-	{ group: `App`, type: String, alias: `f`, name: `file`, description: 'Input file', defaultOption: true }
+	...PARAM_DEFS.map(ParamDef.mapper(defaults)(`HAR`)(Boolean)),
+	{ group: `App`, type: String, defaultValue: `${defaults.input}`, alias: `i`, name: `input`, description: 'Input file path.', defaultOption: true }
 ]
 
 const options: cla.CommandLineOptions = cla(
@@ -362,9 +346,9 @@ const layerParams = (paths: SysPaths) => (defaults: HAR2OAPICLIParams): HAR2OAPI
 
 //const paramObj: HAR2OAPICLIParams = Object.values(paths).map(path => jsonLoad(loadFile(path)())).reduce(HAR2OAPICLIParams.reducer, defaults)
 
-const paramRename = <T1>(names: ParamName[]) => <T2>(obj: T2): T1 => Object.fromEntries(names.map(({ s, l }) => [l, obj[s]])) as T1
+const paramRename = <T1>(names: ParamDef[]) => <T2>(obj: T2): T1 => Object.fromEntries(names.map(({ s, l }) => [l, obj[s]])) as T1
 
-const optsExpanded: HAR2OAPICLIParams = paramRename<HAR2OAPICLIParams>(pns)<cla.CommandLineOptions>(options)
+const optsExpanded: HAR2OAPICLIParams = paramRename<HAR2OAPICLIParams>(PARAM_DEFS)<cla.CommandLineOptions>(options)
 
 /** 
  * Processing CLI `options` here.
@@ -411,45 +395,57 @@ const runtimeParams: HAR2OAPICLIParams = {
 
 // Runtime constants
 
+const INPUT_PATH: fs.PathLike = path.normalize(options.input)
+
+// TODO: Check if input file is empty
+
 const HAS_PIPE: boolean = !process.stdin.isTTY
-const HAS_FILE: boolean = !!options.file
+const HAS_FILE: boolean = !!options.input
 const HAS_INPUT: boolean = HAS_FILE || HAS_PIPE
 
 /**
  * Take input file.
  * If (no file name) and (no STDIN pipe) - print error, exit
  */
-!HAS_INPUT && thr()(erh('Provide input via --file or stdin pipe.')()())
+!HAS_INPUT && thr()(erh(`Provide input via --file or stdin pipe.`)()())
 
 let har: Har = null
 
 if (HAS_FILE) {
-	har = jsonLoad<Har>(loadFile(options.file)(true))
+	har = jsonLoad<Har>(loadFile(path.normalize(options.input))(true))
 } else if (HAS_PIPE) {
-	let pipedHarData: string = ""
+	let pipedHarData: string = ``
 	for await (const chunk of process.stdin) pipedHarData += chunk
 	har = jsonLoad<Har>(pipedHarData)
 }
 
-if (har === null) { thr()(erh('Provide input via --file or stdin pipe.')()()) }
+if (har === null) { thr()(erh(`Provide input via --file or stdin pipe.`)()()) }
 
 // Actually generating the specification
 
-const { spec: openAPIObj }: HarToOpenAPISpec_tmpComp = await generateSpec(har, runtimeParams as HarToOpenAPIConfig)
+const { spec: openAPIObj }: HarToOpenAPISpec = await generateSpec(har, runtimeParams as HarToOpenAPIConfig)
 
 // TODO: Serialize it into specified format
 
-//JSON.stringify(obj)
-//YAML.stringify(obj)
+let output: string = ``
 
-// const processOutput = (handler, config): void => {
-// 	/*
-// 	Output options:
-// 	+ Pipe to STDOUT
-// 	+ Write to a file by a filename
-// 	+ Optionally ask for a proper output format
-// 	*/
-// }
+switch (options.format) {
+	case `yaml`:
+		output = YAML.stringify(openAPIObj)
+		break
+	case `json`:
+		output = JSON.stringify(openAPIObj)
+		break
+	default:
+		thr()(erh(`Entering Tormented Space. It's a rough neighborhood. Those who go there usually vanish.`)()())
+		break
+}
 
+/*
 // TODO: Return serialized to specified output destination
+Output options:
++ Pipe to STDOUT
++ Write to a file by a filename
++ Optionally ask for a proper output format
+*/
 
