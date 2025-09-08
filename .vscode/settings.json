@@ -1,5 +1,6 @@
 {
 	"cSpell.ignoreWords": [
+		"Manif",
 		"OAPICLI",
 		"ainf",
 		"appinfo",
@@ -11,11 +12,13 @@
 		"jsonparse",
 		"nodenext",
 		"oapi",
-		"systemroot"
+		"systemroot",
+		"pdef",
+		"pdefs",
+		"pnsf"
 	],
 	"cSpell.words": [
-		"Bollean",
-		"pnsf"
+		"Bollean"
 	],
 	"cSpell.ignorePaths": [
 		"package-lock.json",
