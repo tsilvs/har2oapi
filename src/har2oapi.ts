@@ -22,13 +22,22 @@ type HarToOpenAPIConfig = Parameters<typeof generateSpec>[1]
  */
 type HarToOpenAPISpec = Awaited<ReturnType<typeof generateSpec>>
 
+type Constructor<T = any> = new (...args: any[]) => T;
+
 /**
  * App CLI options
  */
 type appConfig = {
 	verbose?: boolean,
 	input?: fs.PathLike,
-	output?: fs.PathLike
+	output?: fs.PathLike,
+	debug?: boolean,
+	help?: boolean,
+	version?: boolean,
+	configExport?: boolean,
+	format?: string,
+	safeOut?: boolean,
+	append?: boolean
 }
 
 type HAR2OAPICLIParams = HarToOpenAPIConfig & appConfig
@@ -94,14 +103,19 @@ namespace ParamDef {
 	*/
 	export const find = (pdefs: ParamDef[]) => (n: string): ParamDef => pdefs.find(pn => pn.l == n)
 
-	export const mapper = (defaults: HAR2OAPICLIParams) => (group: string) => (type: any) => (pdef: ParamDef): clu.OptionDefinition => ({
-		group: `${group}`,
-		type: type,
-		defaultValue: defaults[`${pdef.l}`],
-		alias: `${pdef.a}`,
-		name: `${pdef.s}`,
-		description: `${pdef.d}`
-	})
+	export const mapper = (defaults: HAR2OAPICLIParams) => (group: string) => (typeConstructor: Constructor) => (pdef: ParamDef): clu.OptionDefinition => {
+		const currentDefaultValue = defaults[`${pdef.l}`]
+		if (currentDefaultValue.constructor == typeConstructor) {
+			return {
+				group: `${group}`,
+				type: typeConstructor,
+				defaultValue: currentDefaultValue,
+				alias: `${pdef.a}`,
+				name: `${pdef.s}`,
+				description: `${pdef.d}`
+			}
+		}
+	}
 }
 
 const printHelp = (usage: string) /* => (err: Error) */ => {
@@ -252,9 +266,16 @@ const defaults: HAR2OAPICLIParams = {
 	logErrors: true,
 	attemptToParameterizeUrl: true,
 	dropPathsWithoutSuccessfulResponse: true,
-	verbose: false,
+	//verbose: false,
 	input: path.normalize(`./har2oapi.json`),
-	output: path.normalize(`./openapi.yaml`)
+	output: path.normalize(`./openapi.yaml`),
+	//debug: false,
+	help: false,
+	version: false,
+	//configExport: false,
+	format: `yaml`,
+	//safeOut: true,
+	//append: false
 }
 
 // CLI
@@ -278,15 +299,15 @@ const PARAM_DEFS: ParamDef[] = [
 const cliOpts: clu.OptionDefinition[] = [
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'v', name: 'verbose', description: `Report on most performed operations` },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'd', name: 'debug', description: `Print diagnostic messages.` },
-	{ group: `App`, type: Boolean, defaultValue: false, alias: 'h', name: `help`, description: `Display help message.` },
-	{ group: `App`, type: Boolean, defaultValue: false, alias: 'V', name: `version`, description: `Display version.` },
+	{ group: `App`, type: defaults[`help`].constructor, defaultValue: defaults[`help`], alias: 'h', name: `help`, description: `Display help message.` },
+	{ group: `App`, type: defaults[`version`].constructor, defaultValue: defaults[`version`], alias: 'V', name: `version`, description: `Display version.` },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: `C`, name: `configExport`, description: `Print effective config to stderr.` },
-	{ group: `App`, type: String, defaultValue: `${defaults.output}`, alias: `o`, name: `output`, description: 'Output file path.' },
-	{ group: `App`, type: String, defaultValue: `yaml`, alias: `F`, name: `format`, description: 'Output file format.' },
+	{ group: `App`, type: defaults[`output`].constructor, defaultValue: `${defaults[`output`]}`, alias: `o`, name: `output`, description: 'Output file path.' },
+	{ group: `App`, type: defaults[`format`].constructor, defaultValue: defaults[`format`], alias: `F`, name: `format`, description: 'Output file format.' },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 's', name: `safeOut`, description: `Safe output - doesn't write to a non-empty file.` },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'a', name: `append`, description: `Append to an output file. Conflicts with --safeOut.` },
 	...PARAM_DEFS.map(ParamDef.mapper(defaults)(`HAR`)(Boolean)),
-	{ group: `App`, type: String, defaultValue: `${defaults.input}`, alias: `i`, name: `input`, description: 'Input file path.', defaultOption: true }
+	{ group: `App`, type: defaults[`input`].constructor, defaultValue: defaults[`input`], alias: `i`, name: `input`, description: 'Input file path.', defaultOption: true }
 ]
 
 const options: cla.CommandLineOptions = cla(
@@ -301,9 +322,9 @@ const options: cla.CommandLineOptions = cla(
 )
 
 /**
- * If verbose - will print verbose logs. // TODO: Start using it.
+ * If verbose - will print verbose logs. // TODO: Use it.
  */
-//const vbLogW = verboseLog(options.verbose)
+//const vbLogW = verboseLog(runtimeParams.verbose)
 
 const usage: string = clu([
 	{
@@ -395,13 +416,18 @@ const runtimeParams: HAR2OAPICLIParams = {
 
 // Runtime constants
 
-const INPUT_PATH: fs.PathLike = path.normalize(options.input)
-
 // TODO: Check if input file is empty
 
+const INPUT_PATH: fs.PathLike = runtimeParams.input
 const HAS_PIPE: boolean = !process.stdin.isTTY
-const HAS_FILE: boolean = !!options.input
+const HAS_FILE: boolean = !!runtimeParams.input
 const HAS_INPUT: boolean = HAS_FILE || HAS_PIPE
+
+// TODO: Check if output file is empty
+
+const OUTPUT_PATH: fs.PathLike = runtimeParams.output
+const OUTPUT_STDOUT: boolean = !runtimeParams.output
+const OUTPUT_FILE: boolean = !!runtimeParams.output
 
 /**
  * Take input file.
@@ -412,7 +438,7 @@ const HAS_INPUT: boolean = HAS_FILE || HAS_PIPE
 let har: Har = null
 
 if (HAS_FILE) {
-	har = jsonLoad<Har>(loadFile(path.normalize(options.input))(true))
+	har = jsonLoad<Har>(loadFile(INPUT_PATH)(true))
 } else if (HAS_PIPE) {
 	let pipedHarData: string = ``
 	for await (const chunk of process.stdin) pipedHarData += chunk
@@ -425,20 +451,12 @@ if (har === null) { thr()(erh(`Provide input via --file or stdin pipe.`)()()) }
 
 const { spec: openAPIObj }: HarToOpenAPISpec = await generateSpec(har, runtimeParams as HarToOpenAPIConfig)
 
-// TODO: Serialize it into specified format
-
 let output: string = ``
 
-switch (options.format) {
-	case `yaml`:
-		output = YAML.stringify(openAPIObj)
-		break
-	case `json`:
-		output = JSON.stringify(openAPIObj)
-		break
-	default:
-		thr()(erh(`Entering Tormented Space. It's a rough neighborhood. Those who go there usually vanish.`)()())
-		break
+switch (runtimeParams.format) {
+	case `yaml`: output = YAML.stringify(openAPIObj); break;
+	case `json`: output = JSON.stringify(openAPIObj); break;
+	default: thr()(erh(`Entering Tormented Space. It's a rough neighborhood. Those who go there usually vanish.`)()()); break;
 }
 
 /*
@@ -449,3 +467,5 @@ Output options:
 + Optionally ask for a proper output format
 */
 
+if (OUTPUT_STDOUT) process.stdout.write(`${output}\n`)
+if (OUTPUT_FILE) await fs.writeFile(OUTPUT_PATH, output, erh(`Error writing file ${OUTPUT_PATH}`)()(true))
