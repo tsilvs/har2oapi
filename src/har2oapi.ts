@@ -90,8 +90,9 @@ const thr = (msg?: string) => (erhmc: Function): void => { try { throw new Error
 type ParamDef = {
 	a?: string,
 	s?: string,
-	l?: string,
-	d?: string
+	l: string,
+	d?: string,
+	g?: string
 }
 
 namespace ParamDef {
@@ -103,17 +104,15 @@ namespace ParamDef {
 	*/
 	export const find = (pdefs: ParamDef[]) => (n: string): ParamDef => pdefs.find(pn => pn.l == n)
 
-	export const mapper = (defaults: HAR2OAPICLIParams) => (group: string) => (typeConstructor: Constructor) => (pdef: ParamDef): clu.OptionDefinition => {
-		const currentDefaultValue = defaults[`${pdef.l}`]
-		if (currentDefaultValue.constructor == typeConstructor) {
-			return {
-				group: `${group}`,
-				type: typeConstructor,
+	export const mapper = (defaults: HAR2OAPICLIParams) => (pdef: ParamDef): clu.OptionDefinition => {
+		const currentDefaultValue = defaults[`\${pdef.l}`]
+		return {
+				group: `\${pdef.g}`,
+				type: currentDefaultValue.constructor,
 				defaultValue: currentDefaultValue,
-				alias: `${pdef.a}`,
-				name: `${pdef.s}`,
-				description: `${pdef.d}`
-			}
+				alias: `\${pdef.a}`,
+				name: `\${pdef.s?pdef.s:pdef.l}`,
+				description: `\${pdef.d}`
 		}
 	}
 }
@@ -285,15 +284,15 @@ const defaults: HAR2OAPICLIParams = {
  * Param names
 */
 const PARAM_DEFS: ParamDef[] = [
-	{ a: `S`, s: `inSameSpec`, l: `forceAllRequestsInSameSpec`, d: `Treat every url as having the same domain.` },
-	{ a: `P`, s: `srvToPaths`, l: `addServersToPaths`, d: `Add a servers entry to every path object.` },
-	{ a: `A`, s: `guessAuth`, l: `guessAuthenticationHeaders`, d: `Try and guess common auth headers.` },
-	{ a: `m`, s: `relaxMtd`, l: `relaxedMethods`, d: `Allow non-standard methods.` },
-	{ a: `p`, s: `relaxParse`, l: `relaxedContentTypeJsonParse`, d: `Try and parse non application/json responses as json.` },
-	{ a: `H`, s: `filterStdHeads`, l: `filterStandardHeaders`, d: `Filter out all standard headers from the parameter list in openapi.` },
-	{ a: `L`, s: `logErrors`, l: `logErrors`, d: `Log errors to console.` },
-	{ a: `q`, s: `tryParamUrl`, l: `attemptToParameterizeUrl`, d: `Try and parameterize an URL.` },
-	{ a: `N`, s: `drop404`, l: `dropPathsWithoutSuccessfulResponse`, d: `Don't include paths without a response or with a non-2xx response.` },
+	{ g: `HAR`, a: `S`, s: `inSameSpec`, l: `forceAllRequestsInSameSpec`, d: `Treat every url as having the same domain.` },
+	{ g: `HAR`, a: `P`, s: `srvToPaths`, l: `addServersToPaths`, d: `Add a servers entry to every path object.` },
+	{ g: `HAR`, a: `A`, s: `guessAuth`, l: `guessAuthenticationHeaders`, d: `Try and guess common auth headers.` },
+	{ g: `HAR`, a: `m`, s: `relaxMtd`, l: `relaxedMethods`, d: `Allow non-standard methods.` },
+	{ g: `HAR`, a: `p`, s: `relaxParse`, l: `relaxedContentTypeJsonParse`, d: `Try and parse non application/json responses as json.` },
+	{ g: `HAR`, a: `H`, s: `filterStdHeads`, l: `filterStandardHeaders`, d: `Filter out all standard headers from the parameter list in openapi.` },
+	{ g: `HAR`, a: `L`, s: `logErrors`, l: `logErrors`, d: `Log errors to console.` },
+	{ g: `HAR`, a: `q`, s: `tryParamUrl`, l: `attemptToParameterizeUrl`, d: `Try and parameterize an URL.` },
+	{ g: `HAR`, a: `N`, s: `drop404`, l: `dropPathsWithoutSuccessfulResponse`, d: `Don't include paths without a response or with a non-2xx response.` },
 ]
 
 const cliOpts: clu.OptionDefinition[] = [
@@ -306,7 +305,7 @@ const cliOpts: clu.OptionDefinition[] = [
 	{ group: `App`, type: defaults[`format`].constructor, defaultValue: defaults[`format`], alias: `F`, name: `format`, description: 'Output file format.' },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 's', name: `safeOut`, description: `Safe output - doesn't write to a non-empty file.` },
 	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'a', name: `append`, description: `Append to an output file. Conflicts with --safeOut.` },
-	...PARAM_DEFS.map(ParamDef.mapper(defaults)(`HAR`)(Boolean)),
+	...PARAM_DEFS.map(ParamDef.mapper(defaults)),
 	{ group: `App`, type: defaults[`input`].constructor, defaultValue: defaults[`input`], alias: `i`, name: `input`, description: 'Input file path.', defaultOption: true }
 ]
 
