@@ -88,11 +88,12 @@ const thr = (msg?: string) => (erhmc: Function): void => { try { throw new Error
  * 
 */
 type ParamDef = {
-	a?: string,
+	a: string,
 	s?: string,
 	l: string,
-	d?: string,
-	g?: string
+	d: string,
+	g: string,
+	def?: boolean
 }
 
 namespace ParamDef {
@@ -105,14 +106,15 @@ namespace ParamDef {
 	export const find = (pdefs: ParamDef[]) => (n: string): ParamDef => pdefs.find(pn => pn.l == n)
 
 	export const mapper = (defaults: HAR2OAPICLIParams) => (pdef: ParamDef): clu.OptionDefinition => {
-		const currentDefaultValue = defaults[`\${pdef.l}`]
+		const curDeVal = defaults[`${pdef.l}`]
 		return {
-				group: `\${pdef.g}`,
-				type: currentDefaultValue.constructor,
-				defaultValue: currentDefaultValue,
-				alias: `\${pdef.a}`,
-				name: `\${pdef.s?pdef.s:pdef.l}`,
-				description: `\${pdef.d}`
+			group: `${pdef.g}`,
+			type: curDeVal.constructor,
+			defaultValue: curDeVal,
+			alias: `${pdef.a}`,
+			name: `${pdef.s?pdef.s:pdef.l}`,
+			description: `${pdef.d}`,
+			...( pdef.def !== undefined && { defaultOption: pdef.def })
 		}
 	}
 }
@@ -293,21 +295,19 @@ const PARAM_DEFS: ParamDef[] = [
 	{ g: `HAR`, a: `L`, s: `logErrors`, l: `logErrors`, d: `Log errors to console.` },
 	{ g: `HAR`, a: `q`, s: `tryParamUrl`, l: `attemptToParameterizeUrl`, d: `Try and parameterize an URL.` },
 	{ g: `HAR`, a: `N`, s: `drop404`, l: `dropPathsWithoutSuccessfulResponse`, d: `Don't include paths without a response or with a non-2xx response.` },
+	//{ g: `App`, a: 'v', l: 'verbose', d: `Report on most performed operations` },
+	//{ g: `App`, a: 'd', l: 'debug', d: `Print diagnostic messages.` },
+	{ g: `App`, a: 'h', l: `help`, d: `Display help message.` },
+	{ g: `App`, a: 'V', l: `version`, d: `Display version.` },
+	//{ g: `App`, a: `C`, l: `configExport`, d: `Print effective config to stderr.` },
+	{ g: `App`, a: `o`, l: `output`, d: 'Output file path.' },
+	{ g: `App`, a: `F`, l: `format`, d: 'Output file format.' },
+	//{ g: `App`, a: 's', l: `safeOut`, d: `Safe output - doesn't write to a non-empty file.` },
+	//{ g: `App`, a: 'a', l: `append`, d: `Append to an output file. Conflicts with --safeOut.` },
+	{ g: `App`, a: `i`, l: `input`, d: 'Input file path.', def: true }
 ]
 
-const cliOpts: clu.OptionDefinition[] = [
-	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'v', name: 'verbose', description: `Report on most performed operations` },
-	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'd', name: 'debug', description: `Print diagnostic messages.` },
-	{ group: `App`, type: defaults[`help`].constructor, defaultValue: defaults[`help`], alias: 'h', name: `help`, description: `Display help message.` },
-	{ group: `App`, type: defaults[`version`].constructor, defaultValue: defaults[`version`], alias: 'V', name: `version`, description: `Display version.` },
-	//{ group: `App`, type: Boolean, defaultValue: false, alias: `C`, name: `configExport`, description: `Print effective config to stderr.` },
-	{ group: `App`, type: defaults[`output`].constructor, defaultValue: `${defaults[`output`]}`, alias: `o`, name: `output`, description: 'Output file path.' },
-	{ group: `App`, type: defaults[`format`].constructor, defaultValue: defaults[`format`], alias: `F`, name: `format`, description: 'Output file format.' },
-	//{ group: `App`, type: Boolean, defaultValue: false, alias: 's', name: `safeOut`, description: `Safe output - doesn't write to a non-empty file.` },
-	//{ group: `App`, type: Boolean, defaultValue: false, alias: 'a', name: `append`, description: `Append to an output file. Conflicts with --safeOut.` },
-	...PARAM_DEFS.map(ParamDef.mapper(defaults)),
-	{ group: `App`, type: defaults[`input`].constructor, defaultValue: defaults[`input`], alias: `i`, name: `input`, description: 'Input file path.', defaultOption: true }
-]
+const cliOpts: clu.OptionDefinition[] = PARAM_DEFS.map(ParamDef.mapper(defaults))
 
 const options: cla.CommandLineOptions = cla(
 	cliOpts,
