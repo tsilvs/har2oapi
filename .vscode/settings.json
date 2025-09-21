@@ -15,7 +15,9 @@
 		"systemroot",
 		"pdef",
 		"pdefs",
-		"pnsf"
+		"pnsf",
+		"harfile",
+		"terminfo"
 	],
 	"cSpell.words": [
 		"Bollean"

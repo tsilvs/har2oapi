@@ -16,6 +16,22 @@ CLI tool to generate OpenAPI specs from HAR Logs using [`har-to-openapi`](https:
 
 ## Plans
 
+Planned CLI call ways:
+
+```sh
+har2oapi [OPTIONS] harfile.json # writes to a default $pwd/openapi.$ext
+har2oapi [OPTIONS] -p harfile.json # Piped to terminal
+har2oapi [OPTIONS] -p harfile.json > openapi.$ext # Piped to a file
+har2oapi [OPTIONS] -p harfile.json >> openapi.$ext # Piped & appended to a file
+har2oapi [OPTIONS] -o openapi.$ext harfile.json # Out file specified as param
+har2oapi [OPTIONS] -o openapi.$ext -i harfile.json
+cat harfile.json | har2oapi [OPTIONS] # writes to a default $pwd/openapi.$ext
+cat harfile.json | har2oapi [OPTIONS] -p # Piped to terminal
+cat harfile.json | har2oapi [OPTIONS] -p > openapi.$ext # Piped to a file
+cat harfile.json | har2oapi [OPTIONS] -p >> openapi.$ext # Piped & appended to a file
+cat harfile.json | har2oapi [OPTIONS] -o openapi.$ext # Out file specified as param
+```
+
 ### New features
 
 + [ ] Multiple OpenAPI Versions support?

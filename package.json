@@ -18,6 +18,7 @@
 		"command-line-usage": "^7.0.3",
 		"har-to-openapi": "^2.1.1",
 		"strip-json-comments": "^5.0.3",
+		"type-fest": "^5.0.1",
 		"yaml": "^2.8.1"
 	},
 	"devDependencies": {
