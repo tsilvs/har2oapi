@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { CLIParams } from '../types/HAR2OAPICLIParams'
+import { CLIParams } from '../types/CLIParams'
 
 /**
  * @constant defaults

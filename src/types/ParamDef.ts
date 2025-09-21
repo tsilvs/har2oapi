@@ -1,5 +1,5 @@
 import clu from 'command-line-usage'
-import { CLIParams } from './HAR2OAPICLIParams'
+import { CLIParams } from './CLIParams'
 
 /**
  * @type ParamDef

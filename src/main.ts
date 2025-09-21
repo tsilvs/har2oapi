@@ -7,7 +7,7 @@ import type { Har } from "har-format"
 import { generateSpec } from 'har-to-openapi'
 import pkgManif from '../package.json'
 import * as YAML from 'yaml'
-import { CLIParams } from './types/HAR2OAPICLIParams'
+import { CLIParams } from './types/CLIParams'
 import { PackageJson } from 'type-fest'
 import { HarToOpenAPIConfig } from './types/HarToOpenAPIConfig'
 import { HarToOpenAPISpec } from './types/HarToOpenAPISpec'
