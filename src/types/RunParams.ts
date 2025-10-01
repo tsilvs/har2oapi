@@ -3,26 +3,26 @@ import { HarToOpenAPIConfig } from './HarToOpenAPIConfig'
 import { SysPaths } from './SysPaths'
 import { appConfig } from './appConfig'
 
-export type CLIParams = HarToOpenAPIConfig & appConfig // TODO: Adapt for a generic
-export namespace CLIParams {
+export type RunParams = HarToOpenAPIConfig & appConfig // TODO: Adapt for a generic
+export namespace RunParams {
 	/**
 	 * Type array reducer function
 	 *
-	 * @param state {Partial<CLIParams>} Accumulator
-	 * @param update {Partial<CLIParams>} Next object in the line
+	 * @param state {Partial<RunParams>} Accumulator
+	 * @param update {Partial<RunParams>} Next object in the line
 	 * @returns Layered object
 	 */
 	export const reducer = (
-		state: Partial<CLIParams>,
-		update: Partial<CLIParams>
-	): CLIParams => {
+		state: Partial<RunParams>,
+		update: Partial<RunParams>
+	): RunParams => {
 		return { ...state, ...update }
 		/*
 		// Was pretty cool yet simple, but we don't need it anymore
 		// Still not universal for arbitrary nested objects, but for that we can import lodash
 		{
-				harConfig: { ...state.harConfig, ...update.harConfig },
-				config: { ...state.config, ...update.config }
+			harConfig: { ...state.harConfig, ...update.harConfig },
+			config: { ...state.config, ...update.config }
 		}
 		*/
 	}
@@ -44,8 +44,8 @@ export namespace CLIParams {
 	 *
 	 * But it might be more scalable for future features than current strategy.
 	 */
-	export const layer = (paths: SysPaths) => (defaults: CLIParams): CLIParams => Object.values(paths)
-		.map(path => jsonLoad<CLIParams>(loadFile(path)(false)))
+	export const layer = (paths: SysPaths) => (defaults: RunParams): RunParams => Object.values(paths)
+		.map(path => jsonLoad<RunParams>(loadFile(path)(false)))
 		.reduce(reducer, defaults)
 }
 

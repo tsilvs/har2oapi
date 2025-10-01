@@ -26,4 +26,4 @@ export const PARAM_DEFS: ParamDef[] = [
 	{ g: `App`, a: 's', l: `safeOut`, d: `Safe output - doesn't write to a non-empty file.` },
 	{ g: `App`, a: 'a', l: `append`, d: `Append to an output file. Conflicts with --safeOut.` },
 	{ g: `App`, a: `i`, l: `input`, d: 'Input file path.', def: true }
-]
+] as const

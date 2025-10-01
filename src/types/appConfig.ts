@@ -11,7 +11,7 @@ export type appConfig = {
 	help?: boolean,
 	version?: boolean,
 	configExport?: boolean,
-	format?: string,
+	format?: "yaml"|"yml"|"json",
 	safeOut?: boolean,
 	append?: boolean
 }

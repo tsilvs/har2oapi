@@ -7,7 +7,7 @@ import type { Har } from "har-format"
 import { generateSpec } from 'har-to-openapi'
 import pkgManif from '../package.json'
 import * as YAML from 'yaml'
-import { CLIParams } from './types/CLIParams'
+import { RunParams } from './types/RunParams'
 import { PackageJson } from 'type-fest'
 import { HarToOpenAPIConfig } from './types/HarToOpenAPIConfig'
 import { HarToOpenAPISpec } from './types/HarToOpenAPISpec'
@@ -56,7 +56,7 @@ options.help && printHelp(usage)
 
 options.version && printVer(pkgManif as PackageJson)
 
-const optsExpanded: CLIParams = ParamDef.rename<CLIParams>(PARAM_DEFS)<cla.CommandLineOptions>(options)
+const optsExpanded: RunParams = ParamDef.rename<RunParams>(PARAM_DEFS)<cla.CommandLineOptions>(options)
 
 /** 
  * Processing CLI `options` here.
@@ -67,7 +67,7 @@ const optsExpanded: CLIParams = ParamDef.rename<CLIParams>(PARAM_DEFS)<cla.Comma
  * + stores of type `HAR2OAPICLIParams` - long full names
  * + Mapping is in `pns`
  */
-const runtimeParams: CLIParams = { ...CLIParams.layer(paths)(defaults) as CLIParams, ...optsExpanded as CLIParams }
+const runtimeParams: RunParams = { ...RunParams.layer(paths)(defaults) as RunParams, ...optsExpanded as RunParams }
 
 /**
  * Runtime
@@ -138,9 +138,10 @@ const { spec: openAPIObj }: HarToOpenAPISpec = await generateSpec(har, runtimePa
 let output: string = ``
 
 switch (runtimeParams.format) {
+	case `yml`:
 	case `yaml`: output = YAML.stringify(openAPIObj); break;
 	case `json`: output = JSON.stringify(openAPIObj); break;
-	default: thr()(erh(`Entering Tormented Space. It's a rough neighborhood. Those who go there usually vanish.`)()()); break;
+	default: thr()(erh(`Entering Tormented Space. It's a rough neighborhood. Those who go there usually vanish.`)()());
 }
 
 /*

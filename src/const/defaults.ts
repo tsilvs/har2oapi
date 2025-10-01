@@ -1,11 +1,11 @@
 import * as path from 'path'
-import { CLIParams } from '../types/CLIParams'
+import { RunParams } from '../types/RunParams'
 
 /**
  * @constant defaults
  * Default "hardcoded" params
 */
-export const defaults: CLIParams = {
+export const defaults: RunParams = {
 	forceAllRequestsInSameSpec: false,
 	addServersToPaths: false,
 	guessAuthenticationHeaders: true,
@@ -25,4 +25,5 @@ export const defaults: CLIParams = {
 	format: `yaml`, // TODO: read from output path by default, then overwrite with a specified parameter
 	safeOut: true,
 	append: false
-}
+} as const
+

@@ -1,5 +1,5 @@
 import clu from 'command-line-usage'
-import { CLIParams } from './CLIParams'
+import { RunParams } from './RunParams'
 
 /**
  * @type ParamDef
@@ -23,7 +23,7 @@ export namespace ParamDef {
 	*/
 	export const find = (pdefs: ParamDef[]) => (n: string): ParamDef => pdefs.find(pn => pn.l == n)
 
-	export const mapper = (defaults: CLIParams) => (pdef: ParamDef): clu.OptionDefinition => {
+	export const mapper = (defaults: RunParams) => (pdef: ParamDef): clu.OptionDefinition => {
 		const curDeVal = defaults[`${pdef.l}`]
 		return {
 			group: `${pdef.g}`,
