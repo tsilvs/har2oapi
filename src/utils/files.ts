@@ -5,7 +5,7 @@ import { erh } from './errors'
 import * as path from 'path'
 import { SysPaths } from '../types/SysPaths'
 import { AppInfo } from '../types/AppInfo'
-import pkgManif from '../../package.json'
+import pkgManif from '../../package.json' with { type: "json" }
 
 export const ainf: AppInfo = {
 	name: `${pkgManif.name}`,

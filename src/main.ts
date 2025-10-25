@@ -16,7 +16,7 @@ import { printHelp, printVer } from './utils/terminfo'
 import { thr, erh } from './utils/errors'
 import { defaults } from './const/defaults'
 import { PARAM_DEFS } from './const/PARAM_DEFS'
-import pkgManif from '../package.json'
+import pkgManif from '../package.json' with { type: "json" }
 
 /**
  *
@@ -43,7 +43,7 @@ const options: cla.CommandLineOptions = cla(
 		camelCase: true,
 		caseInsensitive: true,
 	}
-)
+) // FIXME: Probably has issues, need to actually attach a debugger
 
 /**
  * If verbose - will print verbose logs. // TODO: Use it.

@@ -25,6 +25,20 @@ export namespace ParamDef {
 
 	export const mapper = (defaults: RunParams) => (pdef: ParamDef): clu.OptionDefinition => {
 		const curDeVal = defaults[`${pdef.l}`]
+		// // console.table(pdef)
+		// if (defaults[`${pdef.l}`] == undefined) {
+		// 	console.log(`${pdef.l}`)
+		// 	return {
+		// 		group: 'debug',
+		// 		type: 'debug',
+		// 		defaultValue: 'debug',
+		// 		alias: 'debug',
+		// 		name: 'debug',
+		// 		description: 'debug',
+		// 		defaultOption: false
+		// 	}
+		// }
+		// // if (curDeVal.constructor == undefined) console.log(pdef.l)
 		return {
 			group: `${pdef.g}`,
 			type: curDeVal.constructor,

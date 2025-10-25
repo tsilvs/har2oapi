@@ -16,14 +16,15 @@ export const defaults: RunParams = {
 	attemptToParameterizeUrl: true,
 	dropPathsWithoutSuccessfulResponse: true,
 	verbose: false,
-	input: path.normalize(`./har2oapi.json`),
-	output: path.normalize(`./openapi.yaml`),
+	input: path.normalize(`./har2oapi.json`), //
+	output: path.normalize(`./openapi.yaml`), //
 	debug: false,
 	help: false,
 	version: false,
 	configExport: false,
 	format: `yaml`, // TODO: read from output path by default, then overwrite with a specified parameter
 	safeOut: true,
-	append: false
+	append: false,
+	stdout: true
 } as const
 
