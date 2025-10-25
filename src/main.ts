@@ -4,9 +4,8 @@ import cla from 'command-line-args'
 import clu from 'command-line-usage'
 import type { Har } from "har-format"
 //import { OpenAPIObject } from 'openapi3-ts'
-import { generateSpec } from 'har-to-openapi'
-import pkgManif from '../package.json'
 import * as YAML from 'yaml'
+import { generateSpec } from 'har-to-openapi'
 import { RunParams } from './types/RunParams'
 import { PackageJson } from 'type-fest'
 import { HarToOpenAPIConfig } from './types/HarToOpenAPIConfig'
@@ -17,6 +16,7 @@ import { printHelp, printVer } from './utils/terminfo'
 import { thr, erh } from './utils/errors'
 import { defaults } from './const/defaults'
 import { PARAM_DEFS } from './const/PARAM_DEFS'
+import pkgManif from '../package.json'
 
 /**
  *

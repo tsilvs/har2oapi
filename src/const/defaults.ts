@@ -15,7 +15,7 @@ export const defaults: RunParams = {
 	logErrors: true,
 	attemptToParameterizeUrl: true,
 	dropPathsWithoutSuccessfulResponse: true,
-	//verbose: false,
+	verbose: false,
 	input: path.normalize(`./har2oapi.json`),
 	output: path.normalize(`./openapi.yaml`),
 	debug: false,

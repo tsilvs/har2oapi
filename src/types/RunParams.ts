@@ -17,14 +17,14 @@ export namespace RunParams {
 		update: Partial<RunParams>
 	): RunParams => {
 		return { ...state, ...update }
-		/*
-		// Was pretty cool yet simple, but we don't need it anymore
 		// Still not universal for arbitrary nested objects, but for that we can import lodash
+		/*
 		{
 			harConfig: { ...state.harConfig, ...update.harConfig },
 			config: { ...state.config, ...update.config }
 		}
 		*/
+		// Was pretty cool yet simple, but we don't need it anymore
 	}
 	/**
 	 * Loads configs from all possible config file locations, layering one over the other, all over hardcoded defaults.
