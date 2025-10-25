@@ -30,11 +30,14 @@
 		"tsconfig-paths/register"
 	],
 	"types": "dist/types.d.ts",
-	"main": "./srs/main.ts",
+	"main": "./src/main.ts",
 	"bin": {
 		"har2oapi": "./src/main.ts"
 	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc",
+		"start": "node .build/main.js"
 	}
 }
+
