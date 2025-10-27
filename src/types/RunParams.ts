@@ -18,13 +18,6 @@ export namespace RunParams {
 	): RunParams => {
 		return { ...state, ...update }
 		// Still not universal for arbitrary nested objects, but for that we can import lodash
-		/*
-		{
-			harConfig: { ...state.harConfig, ...update.harConfig },
-			config: { ...state.config, ...update.config }
-		}
-		*/
-		// Was pretty cool yet simple, but we don't need it anymore
 	}
 	/**
 	 * Loads configs from all possible config file locations, layering one over the other, all over hardcoded defaults.
@@ -45,7 +38,7 @@ export namespace RunParams {
 	 * But it might be more scalable for future features than current strategy.
 	 */
 	export const layer = (paths: SysPaths) => (defaults: RunParams): RunParams => Object.values(paths)
-		.map(path => jsonLoad<RunParams>(loadFile(path)(false)))
+		.map(path => jsonLoad<RunParams>(loadFile(path)(false)()))
 		.reduce(reducer, defaults)
 }
 

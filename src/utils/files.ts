@@ -6,6 +6,7 @@ import * as path from 'path'
 import { SysPaths } from '../types/SysPaths'
 import { AppInfo } from '../types/AppInfo'
 import pkgManif from '../../package.json' with { type: "json" }
+// import fsPromises from 'fs/promises'
 
 export const ainf: AppInfo = {
 	name: `${pkgManif.name}`,
@@ -44,9 +45,19 @@ export const paths: SysPaths = {
  * //TODO: Maybe rewrite with workers for parallelism / multithreading?
  */
 
-export const loadFile = /* async */ (path: fs.PathLike) => (exitOnError: boolean = true): string => {
+export const loadFile =
+(path: fs.PathLike) =>
+(exitOnError: boolean = true) =>
+// <T>(default_return: T): T => {
+(default_return: string = ''): string => {
+	// try {
+	// 	await fsPromises.access(path)
+	// } catch (err) {
+	// 	erh()()(exitOnError)(err)
+	// }
 	let stats: fs.Stats
 	try {
+		fs.accessSync(path)
 		stats = fs.statSync(path)
 		if (stats.size > 0) {
 			return fs.readFileSync(path, `utf8`)
@@ -55,6 +66,7 @@ export const loadFile = /* async */ (path: fs.PathLike) => (exitOnError: boolean
 		}
 	} catch (err) {
 		erh()()(exitOnError)(err)
+		return default_return
 	}
 }
 

@@ -10,7 +10,7 @@ export const PARAM_DEFS: ParamDef[] = [
 	{ g: `HAR`, a: `P`, s: `srvToPaths`, l: `addServersToPaths`, d: `Add a servers entry to every path object.` },
 	{ g: `HAR`, a: `A`, s: `guessAuth`, l: `guessAuthenticationHeaders`, d: `Try and guess common auth headers.` },
 	{ g: `HAR`, a: `m`, s: `relaxMtd`, l: `relaxedMethods`, d: `Allow non-standard methods.` },
-	{ g: `HAR`, a: `p`, s: `relaxParse`, l: `relaxedContentTypeJsonParse`, d: `Try and parse non application/json responses as json.` },
+	{ g: `HAR`, a: `r`, s: `relaxParse`, l: `relaxedContentTypeJsonParse`, d: `Try and parse non application/json responses as json.` },
 	{ g: `HAR`, a: `H`, s: `filterStdHeads`, l: `filterStandardHeaders`, d: `Filter out all standard headers from the parameter list in openapi.` },
 	{ g: `HAR`, a: `L`, s: `logErrors`, l: `logErrors`, d: `Log errors to console.` },
 	{ g: `HAR`, a: `q`, s: `tryParamUrl`, l: `attemptToParameterizeUrl`, d: `Try and parameterize an URL.` },

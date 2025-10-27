@@ -6,7 +6,7 @@
  * @param err {Error} Error object
 */
 
-export const erh = (msg?: string) => (code: number = 1) => (exitOnError: boolean = true) => (err: Error): void => { console.error(err, msg); exitOnError && process.exit(code) }
+export const erh = (msg?: string) => (code: number = 1) => (exitOnError: boolean = true) => (err: Error): void => { console.error(`${msg ? `${msg}\n${err.message}` : err.message}`); exitOnError && process.exit(code) }
 /**
  * Call this to throw and catch an error when 3rd party doesn't.
  * @param msg
@@ -14,3 +14,4 @@ export const erh = (msg?: string) => (code: number = 1) => (exitOnError: boolean
  * @returns void
 */
 export const thr = (msg?: string) => (erhmc: Function): void => { try { throw new Error(msg)}  catch (err) { erhmc(err)}  }
+

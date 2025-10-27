@@ -41,9 +41,9 @@ const options: cla.CommandLineOptions = cla(
 		partial: false,
 		stopAtFirstUnknown: true,
 		camelCase: true,
-		caseInsensitive: true,
+		caseInsensitive: false,
 	}
-) // FIXME: Probably has issues, need to actually attach a debugger
+)
 
 /**
  * If verbose - will print verbose logs. // TODO: Use it.
@@ -122,7 +122,7 @@ const OUTPUT_FILE: boolean = !!runtimeParams.output
 let har: Har = null
 
 if (HAS_FILE) {
-	har = jsonLoad<Har>(loadFile(INPUT_PATH)(true))
+	har = jsonLoad<Har>(loadFile(INPUT_PATH)(true)())
 } else if (HAS_PIPE) {
 	let pipedHarData: string = ``
 	for await (const chunk of process.stdin) pipedHarData += chunk
