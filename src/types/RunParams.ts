@@ -38,7 +38,7 @@ export namespace RunParams {
 	 * But it might be more scalable for future features than current strategy.
 	 */
 	export const layer = (paths: SysPaths) => (defaults: RunParams): RunParams => Object.values(paths)
-		.map(path => jsonLoad<RunParams>(loadFile(path)(false)()))
+		.map(path => jsonLoad(false)<RunParams>(loadFile(path)(false)()))
 		.reduce(reducer, defaults)
 }
 

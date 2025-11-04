@@ -1,10 +1,7 @@
 {
 	"compilerOptions": {
-		//"target": "esnext",
 		"target": "esnext",
-		//"module": "nodenext",
 		"module": "preserve",
-		//"moduleResolution": "nodenext",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
@@ -15,7 +12,7 @@
 		"package.json",
 		"src/main.ts",
 		"src/**/*.json",
-		"src/**/*.jsonc",
+		"src/**/*.jsonc"
 	],
 	"exclude": [
 		"node_modules"

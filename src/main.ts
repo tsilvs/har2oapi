@@ -113,23 +113,25 @@ const OUTPUT_PATH: fs.PathLike = runtimeParams.output
 const OUTPUT_STDOUT: boolean = !runtimeParams.output
 const OUTPUT_FILE: boolean = !!runtimeParams.output
 
+const __msg_nofile=`Provide input via --file or stdin pipe.`
+
 /**
  * Take input file.
  * If (no file name) and (no STDIN pipe) - print error, exit
  */
-!HAS_INPUT && thr()(erh(`Provide input via --file or stdin pipe.`)()())
+!HAS_INPUT && thr()(erh(`${__msg_nofile}`)()())
 
 let har: Har = null
 
 if (HAS_FILE) {
-	har = jsonLoad<Har>(loadFile(INPUT_PATH)(true)())
+	har = jsonLoad(true)<Har>(loadFile(INPUT_PATH)(true)())
 } else if (HAS_PIPE) {
 	let pipedHarData: string = ``
 	for await (const chunk of process.stdin) pipedHarData += chunk
-	har = jsonLoad<Har>(pipedHarData)
+	har = jsonLoad(true)<Har>(pipedHarData)
 }
 
-if (har === null) { thr()(erh(`Provide input via --file or stdin pipe.`)()()) }
+if (har === null) { thr()(erh(`${__msg_nofile}`)()()) }
 
 // Actually generating the specification
 

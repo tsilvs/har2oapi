@@ -1,8 +1,9 @@
-import * as fs from 'fs'
 import * as os from 'os'
+import * as fs from 'fs'
+import * as path from 'path'
+import { fileURLToPath } from 'url'
 import stripJsonComments from 'strip-json-comments'
 import { erh } from './errors'
-import * as path from 'path'
 import { SysPaths } from '../types/SysPaths'
 import { AppInfo } from '../types/AppInfo'
 import pkgManif from '../../package.json' with { type: "json" }
@@ -11,7 +12,8 @@ import pkgManif from '../../package.json' with { type: "json" }
 export const ainf: AppInfo = {
 	name: `${pkgManif.name}`,
 	configfile: `config.jsonc`,
-	buildroot: `${__dirname}`,
+	buildroot: `${__dirname}/..`, // WARNING: hardcoded path relative to THIS FILE, similar structure on compile
+	// buildroot: `${path.dirname(fileURLToPath(import.meta.url))}`,
 	systemroot: ``,
 	homeroot: `${os.homedir()}`,
 	workdir: `${process.cwd()}`
@@ -89,13 +91,15 @@ export const loadFile =
  * 	+ Can store parsed data (curried clojure)? - no reason to do it here for now.
  */
 
-export const jsonLoad = <T>(data: string): T => {
+export const jsonLoad =
+(exitOnError: boolean = true) =>
+<T>(data: string): T => {
 	let datanc: string = ''
 	try {
 		datanc = stripJsonComments(data) // TODO: Decide if I need it all the time or not. It may come out as an overhead and slow down the runtime. But also gives more versatility.
 		return JSON.parse(datanc) as T
 	} catch (err) {
-		erh()()()(err)
+		erh()()(exitOnError)(err)
 	}
 }
 
