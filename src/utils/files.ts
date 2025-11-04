@@ -19,7 +19,7 @@ export const ainf: AppInfo = {
 
 export const paths: SysPaths = {
 	// 2. conf file @ app distro
-	builtin: path.normalize(`${ainf.buildroot}/defaults/${ainf.configfile}`),
+	builtin: path.normalize(`${ainf.buildroot}/data/defaults/${ainf.configfile}`),
 	// 3. conf file @ /etc/ dir
 	shared: path.normalize(`${ainf.systemroot}/etc/${ainf.name}/${ainf.configfile}`),
 	// 4. conf file @ Home dir

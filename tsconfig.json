@@ -14,8 +14,8 @@
 	"include": [
 		"package.json",
 		"src/main.ts",
-		"*/**/*.json",
-		"*/**/*.jsonc",
+		"src/**/*.json",
+		"src/**/*.jsonc",
 	],
 	"exclude": [
 		"node_modules"
