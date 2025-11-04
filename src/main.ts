@@ -113,7 +113,7 @@ const OUTPUT_PATH: fs.PathLike = runtimeParams.output
 const OUTPUT_STDOUT: boolean = !runtimeParams.output
 const OUTPUT_FILE: boolean = !!runtimeParams.output
 
-const __msg_nofile=`Provide input via --file or stdin pipe.`
+const __msg_nofile=`Provide input via --input or stdin pipe.`
 
 /**
  * Take input file.

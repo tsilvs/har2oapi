@@ -37,6 +37,7 @@
 	},
 	"scripts": {
 		"build": "node build/main.js",
-		"start": "node .build/main.js"
+		"start": "node .build/main.js",
+		"debug": "node --inspect-brk=9229 .build/main.js --input .examples/HAR.json"
 	}
 }
