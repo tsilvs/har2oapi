@@ -49,6 +49,6 @@ export namespace ParamDef {
 			...(pdef.def !== undefined && { defaultOption: pdef.def })
 		}
 	}
-	export const rename = <T1>(names: ParamDef[]) => <T2>(obj: T2): T1 => Object.fromEntries(names.map(({ s, l }) => [l, obj[s]])) as T1
+	export const rename = <T1>(names: ParamDef[]) => <T2>(obj: T2): T1 => Object.fromEntries(names.map(({ s, l }) => [l, obj[s?s:l]])) as T1
 }
 

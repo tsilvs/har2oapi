@@ -1,10 +1,10 @@
 {
 	"configurations": [
 		{
-			"name": "Attach to debug [flatpak]",
+			"name": "Node: Debug (remote) [flatpak, task]",
 			"type": "node",
 			"request": "attach",
-			"preLaunchTask": "Launch Node with Debug [flatpak]",
+			"preLaunchTask": "Node: Debug (remote) [flatpak]",
 			"port": 9229,
 			"address": "localhost",
 			"localRoot": "${workspaceFolder}",

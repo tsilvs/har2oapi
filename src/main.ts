@@ -43,7 +43,7 @@ const options: cla.CommandLineOptions = cla(
 		camelCase: true,
 		caseInsensitive: false,
 	}
-)
+)._all // FIXME: doesn't read CLI options from tests
 
 /**
  * If verbose - will print verbose logs. // TODO: Use it.
@@ -56,7 +56,7 @@ options.help && printHelp(usage)
 
 options.version && printVer(pkgManif as PackageJson)
 
-const optsExpanded: RunParams = ParamDef.rename<RunParams>(PARAM_DEFS)<cla.CommandLineOptions>(options)
+const optsExpanded: RunParams = ParamDef.rename<RunParams>(PARAM_DEFS)<cla.CommandLineOptions>(options) // Fixed: was Generating `undefined` object param values
 
 /** 
  * Processing CLI `options` here.

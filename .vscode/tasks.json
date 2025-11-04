@@ -2,7 +2,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Launch Node with Debug [flatpak]",
+			"label": "Node: Debug (remote) [flatpak]",
 			"type": "shell",
 			"command": "flatpak-spawn",
 			"args": [
@@ -27,6 +27,33 @@
 					"endsPattern": "Debugger listening"
 				}
 			}
-		}
+		}//,
+		// {
+		// 	"label": "Node: Build [flatpak]",
+		// 	"type": "shell",
+		// 	"command": "flatpak-spawn",
+		// 	"args": [
+		// 		"--host",
+		// 		"node",
+		// 		"--inspect-brk=9229",
+		// 		"${workspaceFolder}/.build/main.js",
+		// 		"--input",
+		// 		"${workspaceFolder}/.examples/HAR.json"
+		// 	],
+		// 	"isBackground": true,
+		// 	"problemMatcher": {
+		// 		"pattern": {
+		// 			"regexp": ".",
+		// 			"file": 1,
+		// 			"location": 2,
+		// 			"message": 3
+		// 		},
+		// 		"background": {
+		// 			"activeOnStart": true,
+		// 			"beginsPattern": "Debugger listening",
+		// 			"endsPattern": "Debugger listening"
+		// 		}
+		// 	}
+		// }
 	]
 }
