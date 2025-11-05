@@ -13,5 +13,5 @@ export const erh = (msg?: string) => (code: number = 1) => (exitOnError: boolean
  * @param erhmc Error handling function
  * @returns void
 */
-export const thr = (msg?: string) => (erhmc: Function): void => { try { throw new Error(msg)}  catch (err) { erhmc(err)}  }
+export const thr = (msg: string) => (erhmc: Function): void => { try { throw new Error(msg) } catch (err) { erhmc(err) } }
 

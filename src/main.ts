@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as fsp from 'fs/promises'
 // import * as wt from 'worker_threads'
 import cla from 'command-line-args'
 import clu from 'command-line-usage'
@@ -37,13 +38,13 @@ const cliOpts: clu.OptionDefinition[] = PARAM_DEFS.map(ParamDef.mapper(defaults)
 const options: cla.CommandLineOptions = cla(
 	cliOpts,
 	{
-		argv: [],
+		argv: [...process.argv.slice(2)],
 		partial: false,
 		stopAtFirstUnknown: true,
 		camelCase: true,
 		caseInsensitive: false,
 	}
-)._all // FIXME: doesn't read CLI options from tests
+)._all // Fixed: wasn't reading CLI options
 
 /**
  * If verbose - will print verbose logs. // TODO: Use it.
@@ -113,13 +114,13 @@ const OUTPUT_PATH: fs.PathLike = runtimeParams.output
 const OUTPUT_STDOUT: boolean = !runtimeParams.output
 const OUTPUT_FILE: boolean = !!runtimeParams.output
 
-const __msg_nofile=`Provide input via --input or stdin pipe.`
+const __msg_nofile = `Provide input via --input or stdin pipe.`
 
 /**
  * Take input file.
  * If (no file name) and (no STDIN pipe) - print error, exit
  */
-!HAS_INPUT && thr()(erh(`${__msg_nofile}`)()())
+!HAS_INPUT && thr(`${__msg_nofile}`)(erh()()(true))
 
 let har: Har = null
 
@@ -131,7 +132,7 @@ if (HAS_FILE) {
 	har = jsonLoad(true)<Har>(pipedHarData)
 }
 
-if (har === null) { thr()(erh(`${__msg_nofile}`)()()) }
+if (har === null) { thr(`${__msg_nofile}`)(erh()()(true)) }
 
 // Actually generating the specification
 
@@ -141,9 +142,9 @@ let output: string = ``
 
 switch (runtimeParams.format) {
 	case `yml`:
-	case `yaml`: output = YAML.stringify(openAPIObj); break;
-	case `json`: output = JSON.stringify(openAPIObj); break;
-	default: thr()(erh(`Entering Tormented Space. It's a rough neighborhood. Those who go there usually vanish.`)()());
+	case `yaml`: output = YAML.stringify(openAPIObj); break
+	case `json`: output = JSON.stringify(openAPIObj); break
+	default: thr(`Entering Tormented Space. It's a rough neighborhood. Those who go there usually vanish.`)(erh()()())
 }
 
 /*
@@ -155,5 +156,21 @@ Output options:
 */
 
 if (OUTPUT_STDOUT) process.stdout.write(`${output}\n`)
+
 // TODO: 'await' has no effect on the type of this expression.ts(80007)
-if (OUTPUT_FILE) fs.writeFile(OUTPUT_PATH, output, erh(`Error writing file ${OUTPUT_PATH}`)()(true))
+
+if (OUTPUT_FILE) fs.writeFile(OUTPUT_PATH, output, {
+	encoding: `utf8`,
+	// signal: ,
+	// mode: ``,
+	flag: `w`,
+	// flush: ``,
+}, (err) => {
+	if (err) {
+		thr(`Error writing file ${OUTPUT_PATH}`)(erh()()(true))
+		return
+	}
+	console.log('File written successfully!')
+})
+
+
