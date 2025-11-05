@@ -25,13 +25,8 @@ import pkgManif from '../package.json' with { type: "json" }
  * @param msg {String} Custom message
  * @returns
 */
-//const verboseLog = (verbose: boolean) => (msg: string): void => { verbose && process.stdout.write(msg) }
 
-/* Interconnected parameter hierarchy:
-
-runtimeParams.format = options.output.ext <- options.format
-
-*/
+// const verboseLog = (verbose: boolean) => (msg: string): void => { verbose && process.stdout.write(msg) }
 
 const cliOpts: clu.OptionDefinition[] = PARAM_DEFS.map(ParamDef.mapper(defaults))
 
@@ -51,7 +46,47 @@ const options: cla.CommandLineOptions = cla(
  */
 //const vbLogW = verboseLog(runtimeParams.verbose)
 
-const usage: string = clu([{ header: `Options`, content: 'Usage' }, { optionList: cliOpts }])
+const usage: string = clu(
+	[
+		{
+			header: `Options`,
+			content: 'Usage'
+		},
+		{
+			header: 'HAR Options',
+			optionList: cliOpts,
+			group: 'HAR',
+			hide: '',
+			reverseNameOrder: false,
+			raw: false
+		},
+		{
+			header: 'App Options',
+			optionList: cliOpts,
+			group: 'App',
+			hide: '',
+			reverseNameOrder: false,
+			raw: false
+		}
+	]
+)
+
+// tbh,
+// kind of stupid that in this library
+// you have to filter the groups manually for grouping
+// instead of just relying on it to construct the group usage text
+// as it iterates over definitions and detect groups
+
+// Section {
+// 	header?: string                                     // The section header, always bold and underlined
+// 	content?: string[] | { data: any; options: any }    // string(s) or { data, options } for help text rendering
+// 	optionList?: OptionDefinition[]                     // An array of option definition objects
+// 	tableOptions?: any;                                 // An options object suitable for passing into table-layout
+// 	group?: string[]                                    // positive filter by groups
+// 	hide?: string[]                                     // negative filter by option names
+// 	raw?: boolean                                       // Set to true to avoid indentation and wrapping
+// 	reverseNameOrder?: boolean                          // display as `--name, -n`
+// }
 
 options.help && printHelp(usage)
 
