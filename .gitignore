@@ -1,5 +1,27 @@
-node_modules
-.examples
-.build
-bin
+*.bak
+*.db
+*.log
+
+# Dependencies
+node_modules/
+
+# Distributions
+.build/
+bin/
+dist/
+
+# Build & Dev artifacts
+.examples/
+.DS_Store/
+public/_locales/
+public/manifest.json
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Non-textual files
+*.sqlite
+
+# App run results
 openapi.yaml
+
